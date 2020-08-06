@@ -2,7 +2,9 @@ const AlphaVantage = require('../../lib/AlphaVantage')
 
 jest.mock('alphavantage', () => jest.fn(() => ({
     data: {
-        intraday: jest.fn()
+        intraday: jest.fn(()=>({
+            then: jest.fn()
+        }))
     }
 })))
 test('Test', () => {
