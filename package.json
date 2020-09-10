@@ -10,7 +10,8 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "alphavantage": "^2.1.0"
+        "alphavantage": "^2.1.0",
+        "winston": "^3.3.3"
     },
     "devDependencies": {
         "jest": "^26.2.2"
