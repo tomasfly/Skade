@@ -11,6 +11,7 @@
     "license": "ISC",
     "dependencies": {
         "alphavantage": "^2.1.0",
+        "moment": "^2.27.0",
         "winston": "^3.3.3"
     },
     "devDependencies": {
