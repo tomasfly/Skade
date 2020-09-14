@@ -5,12 +5,14 @@
     "main": "index.js",
     "scripts": {
         "test": "jest",
-        "start": "node ./src/index.js"
+        "start": "node ./src/index.js",
+        "format-data": "sed -i '$s/,$//' data.json && sed -i '1s/^/[/' data.json && echo ] >> data.json"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
         "alphavantage": "^2.1.0",
+        "axios": "^0.20.0",
         "moment": "^2.27.0",
         "winston": "^3.3.3"
     },
