@@ -13,6 +13,7 @@
     "dependencies": {
         "alphavantage": "^2.1.0",
         "axios": "^0.20.0",
+        "line-reader": "^0.4.0",
         "moment": "^2.27.0",
         "winston": "^3.3.3"
     },

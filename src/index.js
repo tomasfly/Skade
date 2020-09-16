@@ -3,19 +3,17 @@ const Marketstack = require('../lib/Marketstack')
 const fs = require('fs')
 const logger = require('../helper/logger')
 const moment = require('moment')
+// const instrumentsArray = require('../resources/nyse').instrumentsArray
 
-// libertex lists
-// const instrumentsArray = ['TSLA','MRNA','NVDA','PINS','AMZN','SNAP','SPOT','AAPL','YNDX','NTDOY','FB','CRM','ADBE','APHA','LUV','EBAY','WSM','NFLX','BABA','SVMK','MSFT','SIE','ATVI','AA','NKE','RACE','DAI','CAT','SAP','GOOGL','RYAAY','DBK','TWTR','SQM','VALE','HD','ORCL','MA','DIS','SBUX','PG','EL','V','SK','RCL','UNH','GS','ETH','ADS','BIDU','MCD','BMW','F','VZ','HOG','UBER','MTS','TM','JNJ','PFE','RNO','BAC','CSCO','TRIP','DBX','VOW','BAS','AXP','VFC','BNP','IBM','JPM','OGZPY','CRON','ROSN','TRV','WYNN','KO','TIF','PVH','PM','DG','HPQ','INTC','BSAC','PTR','FP','CHL','LUKOY','ITX','C','ENIC','BAYN','PBR','GILD','XOM','LYFT','SAVE','VOD','T','KORS','AIR','RL','EDF','GE','CCL','NCLH','REP','WFC','AF','BA','TUI','ACB','TLRY','JWN','LTM']
+// const instrumentsArray = ['MRNA', 'TESLA', 'UBER', 'JQC', 'JDD', 'DIAX', 'NDMO', 'JEMD', 'NEV', 'JFR', 'JRO', 'NKG', 'JGH', 'JHY', 'NXC', 'NXN', 'NID', 'NMY', 'NMT', 'NUM', 'NMS', 'NOM', 'JLS', 'JMM', 'NHA', 'NZF', 'NMCO', 'NMZ', 'NMI', 'NJV']
 
-// const instrumentsArray = ['SBER', 'BAS', 'AXP', 'VFC', 'BNP', 'IBM', 'JPM', 'AFLT', 'OGZPY', 'CRON', 'ROSN', 'ENEL', 'TRV', 'WYNN', 'KO', 'TIF', 'GMKN', 'PVH', 'PM', 'DG', 'HPQ', 'INTC', 'BSAC', 'PTR', 'FP', 'CHL', 'LUKOY', 'ITX', 'C', 'ENIC', 'BAYN', 'PBR', 'GILD', 'XOM', 'LYFT', 'SAVE', 'VOD', 'T', 'IDCB', 'KORS', 'ENI', 'AIR', 'RL', 'EDF', 'GE', 'CCL', 'NCLH', 'REP', 'WFC', 'AF', 'BA', 'TUI', 'ACB', 'TLRY', 'JWN', 'LTM']
 
-const instrumentsArray = ['POM','KSS','TPR','HST']
-
-const returnArray = []
+const instrumentsArray = ['MRNA', 'TSLA', 'UBER', 'JQC', 'NEV', 'DIAX', 'JEMD', 'NZF', 'WORK', 'C']
 
 // This one works but analyze one instrument per time and the idea is to analyze all in parallel. That is to say send all requests to the server in parallel and wait for responses
 
 async function techAnalysis() {
+    const returnArray = []
     let macd
     let rsi
     for (const element of instrumentsArray) {
@@ -47,7 +45,6 @@ async function getDataFirstApproach() {
 }
 
 // previous day date yyyy-mm-dd
-var date = moment().subtract(1, "days").format("YYYY-MM-DD");
 
 function getData(date) {
     if (fs.existsSync('./data.json')) {
@@ -114,9 +111,34 @@ function getRSITopGainers(top) {
 }
 
 ab = new AlphaVantage()
+
+function getPrice(days) {
+    instrumentsArray.forEach(element => {
+        const objectsArray = []
+        ab.getDailyGainers(element).then((res) => {
+            let dailyData = res['Time Series (Daily)']
+            for (var [key, value] of Object.entries(dailyData)) {
+                objectsArray.push({ date: key, data: value })
+            }
+            let latest = objectsArray[0].data['4. close']
+            let oldest = objectsArray[days].data['4. close']
+            console.log(`${element} latest price is ${latest} with date ${objectsArray[0].date}`)
+            console.log(`${element} oldest price is ${oldest} with date ${objectsArray[days].date}`)
+            if (parseInt(latest) > parseInt(oldest)) {
+                console.log(`${element} price increased`)
+            } else {
+                console.log(`${element}price decreased`)
+            }
+        })
+    });
+}
+
+getPrice(1)
+
 // m = new Marketstack()
 // m.getEOD()
-// console.log(getRSITopGainers(20))
-// console.log(getMACDTopGainers(20))
-getData('2020-09-11')
+// console.log(getRSITopGainers(5))
+// console.log(getMACDTopGainers(5))
+// var date = moment().subtract(1, "days").format("YYYY-MM-DD");
+// getData(date)
 // ab.getFundamental('POM')
