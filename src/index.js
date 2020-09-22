@@ -3,12 +3,13 @@ const Marketstack = require('../lib/Marketstack')
 const fs = require('fs')
 const logger = require('../helper/logger')
 const moment = require('moment')
-// const instrumentsArray = require('../resources/nyse').instrumentsArray
+const instrumentsArray = require('../resources/sp500').instrumentsArray
 const SLEEP = 700
+ab = new AlphaVantage()
 
-const instrumentsArray = ['ORLY', 'OXY', 'ODFL', 'OMC', 'OKE', 'ORCL', 'OTIS', 'PCAR', 'PKG', 'PH', 'PAYX', 'PAYC', 'PYPL', 'PNR', 'PBCT', 'PEP', 'PKI', 'PRGO', 'PFE', 'PM', 'PSX', 'PNW', 'PXD', 'PNC', 'PPG', 'PPL', 'PFG', 'PG', 'PGR', 'PLD', 'PRU', 'PEG', 'PSA', 'PHM', 'PVH', 'QRVO', 'QCOM', 'PWR', 'DGX', 'RL', 'RJF', 'RTX', 'O', 'REG', 'REGN', 'RF', 'RSG', 'RMD', 'RHI', 'ROK', 'ROL', 'ROP', 'ROST', 'RCL', 'SPGI', 'CRM', 'SBAC', 'SLB', 'STX', 'SEE', 'SRE', 'NOW', 'SHW', 'SPG', 'SWKS', 'SLG', 'SNA', 'SO', 'LUV', 'SWK', 'SBUX', 'STT', 'STE', 'SYK', 'SIVB', 'SYF', 'SNPS', 'SYY', 'TMUS', 'TROW', 'TTWO', 'TPR', 'TGT', 'TEL', 'FTI', 'TDY', 'TFX', 'TXN', 'TXT', 'BK', 'CLX', 'COO', 'HSY', 'MOS', 'TRV', 'DIS', 'TMO', 'TIF', 'TJX', 'TSCO', 'TT', 'TDG', 'TFC', 'TWTR', 'TYL', 'TSN', 'USB', 'UDR',]
+// const instrumentsArray = ['PYPL']
 
-// const instrumentsArray = ['PEP']
+// const instrumentsArray = ['UBER']
 
 // This one works but analyze one instrument per time and the idea is to analyze all in parallel. That is to say send all requests to the server in parallel and wait for responses
 
@@ -49,6 +50,10 @@ async function sleep(msec) {
     return new Promise(resolve => setTimeout(resolve, msec));
 }
 
+
+// used for getting RSI and MACD and signal which are very close to each other
+// used with:  console.log(getRSITopGainers(50)) 
+// console.log(getMACDTopGainers(50))
 async function getData(date) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -58,8 +63,8 @@ async function getData(date) {
     for (const element of instrumentsArray) {
         let instumentAnalysis = {}
         await sleep(SLEEP)
-        // ab.getMACDDifference(element, date).then((macd) => {
-        ab.getMACDDifferenceMacdUp(element, date).then((macd) => {
+        ab.getMACDDifference(element, date).then((macd) => {
+            // ab.getMACDDifferenceMacdUp(element, date).then((macd) => {
             ab.getRSI(element, date).then((rsi) => {
                 instumentAnalysis = { symbol: element, RSI: rsi, MACD: macd }
                 fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
@@ -68,6 +73,7 @@ async function getData(date) {
     }
 }
 
+// this one automatically gets dates
 async function getMACData() {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -83,6 +89,9 @@ async function getMACData() {
         })
     }
 }
+
+
+
 
 // sweet turnover point manual dates (I would say most suggested approach for now)
 // async function getMACData(dates) {
@@ -101,7 +110,25 @@ async function getMACData() {
 //     }
 // }
 
+
+
 // deceleration point approach in progress below
+// Patterns as the ones below which have deceleration frames < 10% seem to have good results
+// Seems there is a deceleration pattern for CLX
+// Logging sequence
+// 0.9236651771317963
+// 3.6529462324515443
+// 10.223953261927935
+// 15.162443932597897
+// Seems there is a deceleration pattern for TSCO
+// Logging sequence
+// 3.295819935691322
+// 3.385530574752861
+// 5.9308683161894225
+// 9.347925216598261
+// Done in 356.05s.
+const dates = ['2020-09-21', '2020-09-18', '2020-09-17', '2020-09-16', '2020-09-15']
+getMACData(dates)
 async function getMACData(dates) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -117,10 +144,6 @@ async function getMACData(dates) {
         })
     }
 }
-
-
-
-
 
 function getMACDTopGainers(top) {
     let differenceArray = []
@@ -169,26 +192,27 @@ function getRSITopGainers(top) {
     return topsObjs
 }
 
-function getPrice(days) {
-    instrumentsArray.forEach(element => {
-        const objectsArray = []
-        ab.getDailyGainers(element).then((res) => {
-            let dailyData = res['Time Series (Daily)']
-            for (var [key, value] of Object.entries(dailyData)) {
-                objectsArray.push({ date: key, data: value })
-            }
-            let latest = objectsArray[0].data['4. close']
-            let oldest = objectsArray[days].data['4. close']
-            console.log(`${element} latest price is ${latest} with date ${objectsArray[0].date}`)
-            console.log(`${element} oldest price is ${oldest} with date ${objectsArray[days].date}`)
-            if (parseInt(latest) > parseInt(oldest)) {
-                console.log(`${element} price increased`)
-            } else {
-                console.log(`${element}price decreased`)
-            }
-        })
-    });
-}
+// Think not useful
+// function getPrice(days) {
+//     instrumentsArray.forEach(element => {
+//         const objectsArray = []
+//         ab.getDailyGainers(element).then((res) => {
+//             let dailyData = res['Time Series (Daily)']
+//             for (var [key, value] of Object.entries(dailyData)) {
+//                 objectsArray.push({ date: key, data: value })
+//             }
+//             let latest = objectsArray[0].data['4. close']
+//             let oldest = objectsArray[days].data['4. close']
+//             console.log(`${element} latest price is ${latest} with date ${objectsArray[0].date}`)
+//             console.log(`${element} oldest price is ${oldest} with date ${objectsArray[days].date}`)
+//             if (parseInt(latest) > parseInt(oldest)) {
+//                 console.log(`${element} price increased`)
+//             } else {
+//                 console.log(`${element}price decreased`)
+//             }
+//         })
+//     });
+// }
 
 function isMACDSweet() {
     let data = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
@@ -199,15 +223,68 @@ function isMACDSweet() {
     });
 }
 
-ab = new AlphaVantage()
+
+// the following two functions work together
+// Surpsingly, what worked for me was to run function as getPriceGainers(5) --> worked quite smoothly with 10, 3, 2
+// and the ones who had the lowest values: 
+// { symbol: 'CCL', avg: -21.154733362583535, days: 5 }
+// { symbol: 'NCLH', avg: -16.463127480527117, days: 5 }
+// { symbol: 'BWA', avg: -13.18736635062368, days: 5 }
+// { symbol: 'AIV', avg: -12.07961758905749, days: 5 }
+// { symbol: 'COTY', avg: -11.179618989895543, days: 5 }
+// Were the ones who are having highest increases
+// getPriceGainers(3)
+// printSortPriceGainers()
+async function getPriceGainers(days) {
+    if (fs.existsSync('./data.json')) {
+        fs.unlinkSync('./data.json')
+    }
+    fs.writeFileSync('./data.json', '')
+    logger.info(`Attempting to process ${instrumentsArray.length} instruments`)
+    for (const element of instrumentsArray) {
+        let instumentAnalysis = {}
+        await sleep(SLEEP)
+        ab.getWeeklyPercentagePrice(element, days).then((response) => {
+            instumentAnalysis = { symbol: element, avg: response, days: days }
+            fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
+        })
+    }
+
+}
+
+function printSortPriceGainers() {
+    let data = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
+    let AVGArray = []
+    data.forEach(element => {
+        AVGArray.push(parseFloat(element.avg))
+    });
+
+    AVGArray.sort(function (a, b) {
+        return a - b;
+    });
+    AVGFinalArray = AVGArray
+
+    AVGFinalArray.forEach(elementFinal => {
+        data.forEach(elementRaw => {
+            if (parseFloat(elementRaw.avg) === elementFinal) {
+                console.log({ symbol: elementRaw.symbol, avg: elementFinal, days: elementRaw.days })
+            }
+        });
+    });
+}
+//////////////
+//////////////
+
 // isMACDSweet()
 // getPrice(1)
 // m = new Marketstack()
 // m.getEOD()
-// console.log(getRSITopGainers(20))
+// console.log(getRSITopGainers(50))
+
 // console.log(getMACDTopGainers(50))
 // var date = moment().subtract(1, "days").format("YYYY-MM-DD");
-const dates = ['2020-09-18', '2020-09-17', '2020-09-16', '2020-09-15', '2020-09-14']
-getMACData(dates)
+// var date = '2020-09-18'
+// getData(date)
+
 // ab.getFundamental('POM')
 // ab.getCrypto()
