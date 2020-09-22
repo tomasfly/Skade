@@ -3,7 +3,7 @@ const Marketstack = require('../lib/Marketstack')
 const fs = require('fs')
 const logger = require('../helper/logger')
 const moment = require('moment')
-const instrumentsArray = require('../resources/sp500').instrumentsArray
+const instrumentsArray = require('../resources/nyse').instrumentsArray
 const SLEEP = 700
 ab = new AlphaVantage()
 
@@ -127,8 +127,8 @@ async function getMACData() {
 // 5.9308683161894225
 // 9.347925216598261
 // Done in 356.05s.
-const dates = ['2020-09-21', '2020-09-18', '2020-09-17', '2020-09-16', '2020-09-15']
-getMACData(dates)
+// const dates = ['2020-09-21', '2020-09-18', '2020-09-17', '2020-09-16', '2020-09-15']
+// getMACData(dates)
 async function getMACData(dates) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -233,7 +233,19 @@ function isMACDSweet() {
 // { symbol: 'AIV', avg: -12.07961758905749, days: 5 }
 // { symbol: 'COTY', avg: -11.179618989895543, days: 5 }
 // Were the ones who are having highest increases
-// getPriceGainers(3)
+
+
+// interesting result in which the ones go grew the most in the last 3 days had great values for nyse:
+// { symbol: 'CTRA', avg: 30.954822770130587, days: 3 } +11%
+// { symbol: 'CUB', avg: 32.00831963374379, days: 3 } -8%
+// { symbol: 'JE', avg: 38.80886796481225, days: 3 } +26%
+// { symbol: 'RENN', avg: 39.92781321956862, days: 3 } +24%
+// { symbol: 'SOL', avg: 63.7620001657659, days: 3 } -14%
+
+// testing 2 days
+
+
+getPriceGainers(2)
 // printSortPriceGainers()
 async function getPriceGainers(days) {
     if (fs.existsSync('./data.json')) {
@@ -256,14 +268,14 @@ function printSortPriceGainers() {
     let data = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
     let AVGArray = []
     data.forEach(element => {
-        AVGArray.push(parseFloat(element.avg))
+        if (element.avg) {
+            AVGArray.push(parseFloat(element.avg))
+        }
     });
 
-    AVGArray.sort(function (a, b) {
+    AVGFinalArray = AVGArray.sort(function (a, b) {
         return a - b;
     });
-    AVGFinalArray = AVGArray
-
     AVGFinalArray.forEach(elementFinal => {
         data.forEach(elementRaw => {
             if (parseFloat(elementRaw.avg) === elementFinal) {
@@ -272,6 +284,7 @@ function printSortPriceGainers() {
         });
     });
 }
+
 //////////////
 //////////////
 
