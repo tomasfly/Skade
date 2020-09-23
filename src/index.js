@@ -242,11 +242,17 @@ function isMACDSweet() {
 // { symbol: 'RENN', avg: 39.92781321956862, days: 3 } +24%
 // { symbol: 'SOL', avg: 63.7620001657659, days: 3 } -14%
 
-// testing 2 days
+// testing 2 days even better results!
+// { symbol: 'TCS', avg: 16.511090456931854, days: 2 } 
+// { symbol: 'CUB', avg: 26.125373920053505, days: 2 }
+// { symbol: 'RENN', avg: 29.533857322319925, days: 2 }+24,76%
+// { symbol: 'JE', avg: 33.03148873597022, days: 2 }+26,16%
+// { symbol: 'CVNA', avg: 36.00484938108824, days: 2 }+30,61%
+// { symbol: 'PSV', avg: 39.588500115859496, days: 2 }+35,06%
 
 
-getPriceGainers(2)
-// printSortPriceGainers()
+// getPriceGainers(2)
+printSortPriceGainers()
 async function getPriceGainers(days) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
