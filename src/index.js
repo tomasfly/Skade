@@ -3,11 +3,11 @@ const Marketstack = require('../lib/Marketstack')
 const fs = require('fs')
 const logger = require('../helper/logger')
 const moment = require('moment')
-const instrumentsArray = require('../resources/nyse').instrumentsArray
+const instrumentsArray = require('../resources/sp500').instrumentsArray
 const SLEEP = 700
 ab = new AlphaVantage()
 
-// const instrumentsArray = ['PYPL']
+// const instrumentsArray = ['WTM']
 
 // const instrumentsArray = ['UBER']
 
@@ -52,8 +52,10 @@ async function sleep(msec) {
 
 
 // used for getting RSI and MACD and signal which are very close to each other
-// used with:  console.log(getRSITopGainers(50)) 
+console.log(getRSITopGainers(20))
 // console.log(getMACDTopGainers(50))
+// date = '2020-09-21'
+// getData(date)
 async function getData(date) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -84,6 +86,26 @@ async function getMACData() {
         let instumentAnalysis = {}
         await sleep(SLEEP)
         ab.getMACDSweetPoint(element).then((isSweetPoint) => {
+            instumentAnalysis = { symbol: element, isSweetPoint: isSweetPoint }
+            fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
+        })
+    }
+}
+
+// getMACDData sweet point (when MACD crosses signal line)
+// const dates = ['2020-09-23', '2020-09-22', '2020-09-21', '2020-09-18', '2020-09-17']
+// getMACDataSweetPoint(dates)
+// console.log(getMACDTopGainers(50))
+async function getMACDataSweetPoint(dates) {
+    if (fs.existsSync('./data.json')) {
+        fs.unlinkSync('./data.json')
+    }
+    fs.writeFileSync('./data.json', '')
+    logger.info(`Attempting to process ${instrumentsArray.length} instruments`)
+    for (const element of instrumentsArray) {
+        let instumentAnalysis = {}
+        await sleep(SLEEP)
+        ab.getMACDSweetPoint(element,dates).then((isSweetPoint) => {
             instumentAnalysis = { symbol: element, isSweetPoint: isSweetPoint }
             fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
         })
@@ -127,7 +149,7 @@ async function getMACData() {
 // 5.9308683161894225
 // 9.347925216598261
 // Done in 356.05s.
-// const dates = ['2020-09-21', '2020-09-18', '2020-09-17', '2020-09-16', '2020-09-15']
+// const dates = ['2020-09-23', '2020-09-22', '2020-09-21', '2020-09-18', '2020-09-17']
 // getMACData(dates)
 async function getMACData(dates) {
     if (fs.existsSync('./data.json')) {
@@ -243,16 +265,16 @@ function isMACDSweet() {
 // { symbol: 'SOL', avg: 63.7620001657659, days: 3 } -14%
 
 // testing 2 days even better results!
-// { symbol: 'TCS', avg: 16.511090456931854, days: 2 } 
-// { symbol: 'CUB', avg: 26.125373920053505, days: 2 }
+// { symbol: 'CUB', avg: 26.125373920053505, days: 2 }-8,11%
 // { symbol: 'RENN', avg: 29.533857322319925, days: 2 }+24,76%
 // { symbol: 'JE', avg: 33.03148873597022, days: 2 }+26,16%
 // { symbol: 'CVNA', avg: 36.00484938108824, days: 2 }+30,61%
 // { symbol: 'PSV', avg: 39.588500115859496, days: 2 }+35,06%
 
-
-// getPriceGainers(2)
-printSortPriceGainers()
+// getPriceGainers() == 6 minutos para sp500
+// getPriceGainers() == X minutos para nyse (sera una media hora)
+// getPriceGainers(20)
+// printSortPriceGainers()
 async function getPriceGainers(days) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -271,7 +293,7 @@ async function getPriceGainers(days) {
 }
 
 function printSortPriceGainers() {
-    let data = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
+    let data = JSON.parse(fs.readFileSync('./datasp50020daytopgainers.json', 'utf8'));
     let AVGArray = []
     data.forEach(element => {
         if (element.avg) {
