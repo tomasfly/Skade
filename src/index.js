@@ -3,7 +3,7 @@ const Marketstack = require('../lib/Marketstack')
 const fs = require('fs')
 const logger = require('../helper/logger')
 const moment = require('moment')
-const instrumentsArray = require('../resources/sp500').instrumentsArray
+const instrumentsArray = require('../resources/nyse').instrumentsArray
 const SLEEP = 700
 ab = new AlphaVantage()
 
@@ -24,6 +24,7 @@ async function techAnalysis() {
     }
     console.log(JSON.stringify(returnArray))
 }
+
 
 // faster approach with append file
 
@@ -52,9 +53,10 @@ async function sleep(msec) {
 
 
 // used for getting RSI and MACD and signal which are very close to each other
-console.log(getRSITopGainers(20))
-// console.log(getMACDTopGainers(50))
-// date = '2020-09-21'
+// console.log(getRSITopGainers(20))
+// const res = getMACDTopGainers(50)
+// fs.writeFileSync('./res.json',JSON.stringify(res))
+// date = '2020-09-24'
 // getData(date)
 async function getData(date) {
     if (fs.existsSync('./data.json')) {
@@ -65,12 +67,31 @@ async function getData(date) {
     for (const element of instrumentsArray) {
         let instumentAnalysis = {}
         await sleep(SLEEP)
-        ab.getMACDDifference(element, date).then((macd) => {
-            // ab.getMACDDifferenceMacdUp(element, date).then((macd) => {
+        // ab.getMACDDifference(element, date).then((macd) => {
+        ab.getMACDDifferenceMacdUp(element, date).then((macd) => {
             ab.getRSI(element, date).then((rsi) => {
                 instumentAnalysis = { symbol: element, RSI: rsi, MACD: macd }
                 fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
             })
+        })
+    }
+}
+
+// improvement on getData specifically on MACD to get golden cross
+const dates = ['2020-09-24', '2020-09-23', '2020-09-22', '2020-09-21', '2020-09-18']
+getData(dates)
+async function getData(date) {
+    if (fs.existsSync('./data.json')) {
+        fs.unlinkSync('./data.json')
+    }
+    fs.writeFileSync('./data.json', '')
+    logger.info(`Attempting to process ${instrumentsArray.length} instruments`)
+    for (const element of instrumentsArray) {
+        let instumentAnalysis = {}
+        await sleep(SLEEP)
+        ab.getMACDDifferenceMacdUpManualDates(element, date).then((macd) => {
+            instumentAnalysis = { symbol: element, MACD: macd }
+            fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
         })
     }
 }
@@ -105,7 +126,7 @@ async function getMACDataSweetPoint(dates) {
     for (const element of instrumentsArray) {
         let instumentAnalysis = {}
         await sleep(SLEEP)
-        ab.getMACDSweetPoint(element,dates).then((isSweetPoint) => {
+        ab.getMACDSweetPoint(element, dates).then((isSweetPoint) => {
             instumentAnalysis = { symbol: element, isSweetPoint: isSweetPoint }
             fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
         })
