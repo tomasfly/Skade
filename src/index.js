@@ -78,9 +78,28 @@ async function getData(date) {
 }
 
 // improvement on getData specifically on MACD to get golden cross
-const dates = ['2020-09-24', '2020-09-23', '2020-09-22', '2020-09-21', '2020-09-18']
-getData(dates)
-async function getData(date) {
+// const dates = ['2020-09-24', '2020-09-23', '2020-09-22', '2020-09-21', '2020-09-18']
+// getData(dates)
+// async function getData(date) {
+//     if (fs.existsSync('./data.json')) {
+//         fs.unlinkSync('./data.json')
+//     }
+//     fs.writeFileSync('./data.json', '')
+//     logger.info(`Attempting to process ${instrumentsArray.length} instruments`)
+//     for (const element of instrumentsArray) {
+//         let instumentAnalysis = {}
+//         await sleep(SLEEP)
+//         ab.getMACDDifferenceMacdUpManualDates(element, date).then((macd) => {
+//             instumentAnalysis = { symbol: element, MACD: macd }
+//             fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
+//         })
+//     }
+// }
+
+// Get MACD Crossing Baseline
+const dates = ['2020-09-28', '2020-09-25']
+getMACDCrossBaseline(dates)
+async function getMACDCrossBaseline(dates) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
     }
@@ -89,7 +108,7 @@ async function getData(date) {
     for (const element of instrumentsArray) {
         let instumentAnalysis = {}
         await sleep(SLEEP)
-        ab.getMACDDifferenceMacdUpManualDates(element, date).then((macd) => {
+        ab.getMACDCrossingBaseLine(element, dates).then((macd) => {
             instumentAnalysis = { symbol: element, MACD: macd }
             fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
         })
