@@ -97,7 +97,7 @@ async function getData(date) {
 // }
 
 // Get MACD Crossing Baseline
-const dates = ['2020-09-28', '2020-09-25']
+const dates = ['2020-09-29', '2020-09-28']
 getMACDCrossBaseline(dates)
 async function getMACDCrossBaseline(dates) {
     if (fs.existsSync('./data.json')) {
