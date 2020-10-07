@@ -9,7 +9,8 @@ ab = new AlphaVantage()
 
 // const instrumentsArray = ['WTM']
 
-// const instrumentsArray = ['UBER']
+// cryptos
+// const instrumentsArray = ['XEMUSD', 'OMGUSD', 'OMGETH', 'ZECUSD', 'ZECETH', 'LNKUSD', 'ZECBTC', 'XMRUSD', 'XMRETH', 'XMRETH', 'ATMUSD', 'XMRBTC', 'BTGETH', 'BTGUSD', 'XTZUSD', 'XRPUSD', 'BTCEUR', 'ONTUSD', 'BTGBTC', 'BSVUSD', 'ETHUSD', 'XLMUSD', 'BCHUSD', 'ETCUSD', 'ADAUSD', 'EOSUSD', 'TRXUSD', 'EOSETH', 'DASHETH', 'ETHBTC', 'DASHUSD', 'QTMETH', 'QTMUSD', 'BCHBTC', 'ETCETH', 'MKRUSD', 'DASHBTC', 'NEOUSD', 'NEOETH', 'LTCETH', 'IOTUSD', 'IOTETH', 'LTCBTC', 'NEOBTC','NZDUSD','GBPUSD','USDCAD','EURUSD','USDCHF','USDJPY','AUDUSD']
 
 // This one works but analyze one instrument per time and the idea is to analyze all in parallel. That is to say send all requests to the server in parallel and wait for responses
 
@@ -97,7 +98,7 @@ async function getData(date) {
 // }
 
 // Get MACD Crossing Baseline
-const dates = ['2020-10-01', '2020-09-30']
+const dates = ['2020-10-06', '2020-10-05']
 getMACDCrossBaseline(dates)
 async function getMACDCrossBaseline(dates) {
     if (fs.existsSync('./data.json')) {
@@ -109,6 +110,25 @@ async function getMACDCrossBaseline(dates) {
         let instumentAnalysis = {}
         await sleep(SLEEP)
         ab.getMACDCrossingBaseLine(element, dates).then((macd) => {
+            instumentAnalysis = { symbol: element, MACD: macd }
+            fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
+        })
+    }
+}
+
+// Get MACD Crossing signal when its already above baseline
+// const dates = ['2020-10-06', '2020-10-05']
+// getMACDCrossBaselineCryptos(dates)
+async function getMACDCrossBaselineCryptos(dates) {
+    if (fs.existsSync('./data.json')) {
+        fs.unlinkSync('./data.json')
+    }
+    fs.writeFileSync('./data.json', '')
+    logger.info(`Attempting to process ${instrumentsArray.length} instruments`)
+    for (const element of instrumentsArray) {
+        let instumentAnalysis = {}
+        await sleep(SLEEP)
+        ab.getMACDCrossingBaseLineCryptos(element, dates).then((macd) => {
             instumentAnalysis = { symbol: element, MACD: macd }
             fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
         })
