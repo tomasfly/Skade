@@ -97,9 +97,11 @@ async function getData(date) {
 //     }
 // }
 
+//STAR FUNCTION!!!
 // Get MACD Crossing Baseline
-const dates = ['2020-10-06', '2020-10-05']
+const dates = ['2020-10-08', '2020-10-07']
 getMACDCrossBaseline(dates)
+// Looks for MACD crossing baseline
 async function getMACDCrossBaseline(dates) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -116,9 +118,11 @@ async function getMACDCrossBaseline(dates) {
     }
 }
 
+//STAR FUNCTION!!!
 // Get MACD Crossing signal when its already above baseline
-// const dates = ['2020-10-06', '2020-10-05']
+// const dates = ['2020-10-08', '2020-10-07']
 // getMACDCrossBaselineCryptos(dates)
+// Looks for MACD crossing signal line once is already above baseline
 async function getMACDCrossBaselineCryptos(dates) {
     if (fs.existsSync('./data.json')) {
         fs.unlinkSync('./data.json')
@@ -130,6 +134,26 @@ async function getMACDCrossBaselineCryptos(dates) {
         await sleep(SLEEP)
         ab.getMACDCrossingBaseLineCryptos(element, dates).then((macd) => {
             instumentAnalysis = { symbol: element, MACD: macd }
+            fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
+        })
+    }
+}
+
+//STAR FUNCTION!!!
+// const dates = ['2020-10-07', '2020-10-06','2020-10-05','2020-10-02','2020-10-01']
+// const threshold = 25;
+// printRSI(dates, threshold)
+async function printRSI(date,threshold) {
+    if (fs.existsSync('./data.json')) {
+        fs.unlinkSync('./data.json')
+    }
+    fs.writeFileSync('./data.json', '')
+    logger.info(`Attempting to process ${instrumentsArray.length} instruments`)
+    for (const element of instrumentsArray) {
+        let instumentAnalysis = {}
+        await sleep(SLEEP)
+        ab.getRSI(dates,threshold,element).then((rsi) => {
+            instumentAnalysis = { symbol: element, RSI: rsi }
             fs.appendFileSync('./data.json', `${JSON.stringify(instumentAnalysis)},`)
         })
     }
